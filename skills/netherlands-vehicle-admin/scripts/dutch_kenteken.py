@@ -13,8 +13,8 @@
     python3 dutch_kenteken.py "XX-999-X"
     python3 dutch_kenteken.py --batch plates.txt
 
-说明：XX-999-X / XX999X 是占位示例（sidecode 11 掩码），换成你要查的车牌。
-"""
+说明：XX-999-X / XX999X 只是占位示例（6 位字符，含连字符的显示形式），换成你要查的车牌。
+sidecode 掩码与年代以 SIDECODES 表为准，来源为 RDW 的系列总览。"""
 
 import re
 import sys
