@@ -2,7 +2,8 @@
 
 ## What a sidecode is
 
-Since 1951 the Netherlands issues plates in numbered **sidecode** generations (01–16 to date). Each
+Since 1951 the Netherlands issues plates in numbered **sidecode** generations (01–14 per RDW's
+series overview — there is no 15 or 16). Each
 generation has one fixed mask, so the mask of a plate dates the vehicle's first registration to an
 era. Display uses hyphen-separated groups; RDW's API and most parking systems want the characters
 without hyphens. A plate is **voertuiggebonden** — bound to the vehicle, so it travels with the car
@@ -22,26 +23,31 @@ contain letters outside that pool. Flag those as *non-standard*; do not reject t
 
 ## Sidecode table
 
-Length is 6 characters for sidecodes 01–14 and 7 for generation 16.
+Every Dutch plate is **6 characters**; only the hyphen grouping differs per sidecode. RDW's series
+numbering ends at **14** — there is no generation 15 or 16.
 
-| Code | Mask | From | Notes |
-| --- | --- | --- | --- |
-| 01 | `XX-99-99` | 1951 | earliest generation, may contain non-pool letters |
-| 02 | `99-99-XX` | 1965 | |
-| 03 | `99-XX-99` | 1973 | |
-| 04 | `XX-99-XX` | 1978 | |
-| 05 | `XX-XX-99` | 1991 | |
-| 06 | `99-XX-XX` | 1999 | |
-| 07 | `99-XXX-9` | 2004 | |
-| 08 | `9-XXX-99` | 2006 | |
-| 09 | `XXX-99-X` | 2009 | |
-| 10 | `X-999-XX` | 2011 | |
-| 11 | `XX-999-X` | 2013 | |
-| 12 | `X-99-XXX` | 2015 | |
-| 13 | `99-X-XXX` | 2017 | |
-| 14 | `XXX-X-99` | 2019 | |
-| 15 | `9-XX-99-X` | 2021 | first 7-character generation |
-| 16 | `XX-9-XX-99` | 2023 | current generation at the time of writing |
+| Code | Mask | From (any category) | Cars since | Notes |
+| --- | --- | --- | --- | --- |
+| 01 | `XX-99-99` | 1951 | — | earliest generation, may contain non-pool letters |
+| 02 | `99-99-XX` | 1951 | — | |
+| 03 | `99-XX-99` | 1951 | — | |
+| 04 | `XX-99-XX` | 01-10-1988 | — | starts on trailers and semi-trailers |
+| 05 | `XX-XX-99` | 03-01-1994 | — | starts on heavy goods vehicles |
+| 06 | `99-XX-XX` | 20-01-2000 | 20-01-2000 | |
+| 07 | `99-XXX-9` | 01-09-2005 | 19-05-2008 | |
+| 08 | `9-XXX-99` | 26-02-2009 | 05-03-2013 | |
+| 09 | `XX-999-X` | 11-08-2006 | 30-03-2015 | |
+| 10 | `X-999-XX` | 11-12-2008 | 19-08-2019 | |
+| 11 | `XXX-99-X` | 16-01-2015 | 04-06-2024 | |
+| 12 | `X-99-XXX` | 01-12-2021 | — | not yet issued on cars |
+| 13 | `9-XX-999` | 23-05-2016 | — | |
+| 14 | `999-XX-9` | 13-06-2019 | — | |
+
+Source: RDW, *Overzicht van kentekenseries* —
+<https://www.rdw.nl/de-kentekenplaat/overzicht-van-kentekenseries>. RDW publishes dates per vehicle
+category; "From" is the earliest launch date for any category, "Cars since" is when the series
+reached passenger cars, which is the number that dates a car. A series can therefore be younger by
+category: 09 and 10 ran on mopeds years before cars.
 
 `XX-999-X` above is a placeholder showing the mask shape and the display format — substitute the
 plate you are actually looking up.
@@ -50,7 +56,7 @@ plate you are actually looking up.
 
 1. **Clean.** Uppercase, strip hyphens and spaces:
    `raw = plate.strip().upper().replace("-", "").replace(" ", "")`
-2. **Length.** 6 characters → candidates in sidecodes 01–14; 7 characters → candidates in 15–16.
+2. **Length.** Exactly 6 characters — every Dutch plate is 6 characters regardless of sidecode.
    Anything else is invalid input.
 3. **Regroup and match.** Re-slice the cleaned string into the hyphen groups of each generation's
    mask and regex-match. The first generation that matches wins — the masks are mutually exclusive
@@ -69,17 +75,17 @@ python3 scripts/dutch_kenteken.py               # interactive, empty line to qui
 ```
 
 Its output gives the normalised plate, the sidecode, the display grouping and the era
-(e.g. sidecode 11 → 2013). Use it before a plate is submitted to any parking or municipal system,
+(e.g. sidecode 11 → 2015). Use it before a plate is submitted to any parking or municipal system,
 and to date a vehicle from its plate when no RDW lookup is possible. The script is not a substitute
 for RDW: sidecode gives an era, never the model, weight or tax data — those come from the RDW open
 data endpoints in the main SKILL.md.
 
-**Known discrepancy in the script, inherited from the source rule (verified by running it):** the
-6-/7-character split files generation 15 with the 7-character generations, while its mask
-`9-XX-99-X` holds only 6 characters. Consequences: a genuine 6-character generation-15 plate places
-report as "no match", and a 7-character input is reported as generation 15 with its last character
-dropped. Generation 15 is the one row to check by hand — the mask table above is the authority, and
-the script was left as written rather than silently re-specified.
+**Provenance of this table.** The mask table above was rebuilt from RDW's *Overzicht van
+kentekenseries* and is exercised by the bundled script. An earlier version of this reference carried
+a shifted table — sidecode 09 as `XXX-99-X`, 11 as `XX-999-X`, 13 as `99-X-XXX`, 14 as `XXX-X-99` —
+plus two generations (15 and 16) that RDW does not issue, and a 7-character length rule. That
+version rejected genuine plates of several generations. RDW remains the authority: re-check the
+series overview before relying on a single row.
 
 ## Reading a plate from a photo
 
@@ -95,7 +101,7 @@ the script was left as written rather than silently re-specified.
 
 ## Pitfalls
 
-- **Ambiguity without hyphens.** A bare 6- or 7-character string can regroup into more than one
+- **Ambiguity without hyphens.** A bare 6-character string can regroup into more than one
   generation. Ask for the exact grouping printed on the vehicle or document; if the user cannot
   supply it, report the candidates rather than picking one silently.
 - **Letter-pool exceptions.** Diplomatic plates start with `CD`; export and temporary plates have

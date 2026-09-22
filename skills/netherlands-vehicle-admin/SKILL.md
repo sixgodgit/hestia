@@ -54,18 +54,16 @@ insurers report in batches, so a policy bought the same day can still show `Nee`
 Dutch plates are **vehicle-bound** (voertuiggebonden), not person-bound as in Belgium: the plate
 follows the car through a transfer, and the register is keyed on it, not on the owner.
 
-- **Sidecode generations.** Since 1951 plates are issued in numbered *sidecodes* (01–16 to date),
-  each with a fixed letter/digit mask, so the mask alone dates a first registration. Full mask
-  table, validation algorithm and the vision pipeline for reading a plate off a photo:
-  `references/license-plate-sidecodes.md`.
+- **Sidecode generations.** Since 1951 plates are issued in numbered *sidecodes* — **01–14** in RDW's
+  series overview, and there is no 15 or 16. Each has a fixed letter/digit mask, so the mask alone
+  dates a first registration. Full mask table, validation algorithm and the vision pipeline for
+  reading a plate off a photo: `references/license-plate-sidecodes.md`.
 - **Letter pool.** Vowels `A E I O U` and the confusion-prone `C Q W Y` are excluded, leaving
   `B D F G H J K L M N P R S T V X Z` (17 letters). Older generations (01–03) and special
   categories (diplomatic, export, temporary) can contain non-pool letters — flag those as
   non-standard rather than rejecting the plate.
-- **Length.** 6 characters for sidecodes 01–14, 7 for generation 16. The sources disagree about
-  generation 15 (a 6-character mask filed under the 7-character rule) — the mask table in
-  `references/license-plate-sidecodes.md` is the authority. Display groups the characters with
-  hyphens; RDW's API and most parking systems want them without.
+- **Length.** Every Dutch plate is **6 characters** — only the hyphen grouping varies by sidecode.
+  Display groups the characters with hyphens; RDW's API and most parking systems want them without.
 - **Validate before you submit a plate anywhere.** Parking and municipal systems identify the user
   by plate, and a mistyped plate is a fine, not an error message. Use the bundled parser:
 

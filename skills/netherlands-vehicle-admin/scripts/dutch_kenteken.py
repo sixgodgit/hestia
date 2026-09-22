@@ -24,23 +24,26 @@ import argparse
 LETTERS = "BDFGHJKLMNPRSTVXZ"
 
 # Sidecode 格式定义：(正则, 描述, 年代)
+# 来源：RDW「Overzicht van kentekenseries」
+#   https://www.rdw.nl/de-kentekenplaat/overzicht-van-kentekenseries
+# RDW 的系列编号到 14 为止；荷兰车牌一律 6 位字符（连字符只是显示分组）。
+# 年代 = RDW 公布的该系列最早启用年份（跨车辆类别取最早；汽车自己的启用年份见
+# references/license-plate-sidecodes.md 表格的 Cars since 列）。
 SIDECODES = [
     (r"^[A-Z]{2}-\d{2}-\d{2}$", "XX-99-99", 1951),
-    (r"^\d{2}-\d{2}-[A-Z]{2}$", "99-99-XX", 1965),
-    (r"^\d{2}-[A-Z]{2}-\d{2}$", "99-XX-99", 1973),
-    (r"^[A-Z]{2}-\d{2}-[A-Z]{2}$", "XX-99-XX", 1978),
-    (r"^[A-Z]{2}-[A-Z]{2}-\d{2}$", "XX-XX-99", 1991),
-    (r"^\d{2}-[A-Z]{2}-[A-Z]{2}$", "99-XX-XX", 1999),
-    (r"^\d{2}-[A-Z]{3}-\d$", "99-XXX-9", 2004),
-    (r"^\d-[A-Z]{3}-\d{2}$", "9-XXX-99", 2006),
-    (r"^[A-Z]{3}-\d{2}-[A-Z]$", "XXX-99-X", 2009),
-    (r"^[A-Z]-\d{3}-[A-Z]{2}$", "X-999-XX", 2011),
-    (r"^[A-Z]{2}-\d{3}-[A-Z]$", "XX-999-X", 2013),
-    (r"^[A-Z]-\d{2}-[A-Z]{3}$", "X-99-XXX", 2015),
-    (r"^\d{2}-[A-Z]-[A-Z]{3}$", "99-X-XXX", 2017),
-    (r"^[A-Z]{3}-[A-Z]-\d{2}$", "XXX-X-99", 2019),
-    (r"^\d-[A-Z]{2}-\d{2}-[A-Z]$", "9-XX-99-X", 2021),
-    (r"^[A-Z]{2}-\d-[A-Z]{2}-\d{2}$", "XX-9-XX-99", 2023),
+    (r"^\d{2}-\d{2}-[A-Z]{2}$", "99-99-XX", 1951),
+    (r"^\d{2}-[A-Z]{2}-\d{2}$", "99-XX-99", 1951),
+    (r"^[A-Z]{2}-\d{2}-[A-Z]{2}$", "XX-99-XX", 1988),
+    (r"^[A-Z]{2}-[A-Z]{2}-\d{2}$", "XX-XX-99", 1994),
+    (r"^\d{2}-[A-Z]{2}-[A-Z]{2}$", "99-XX-XX", 2000),
+    (r"^\d{2}-[A-Z]{3}-\d$", "99-XXX-9", 2005),
+    (r"^\d-[A-Z]{3}-\d{2}$", "9-XXX-99", 2009),
+    (r"^[A-Z]{2}-\d{3}-[A-Z]$", "XX-999-X", 2006),
+    (r"^[A-Z]-\d{3}-[A-Z]{2}$", "X-999-XX", 2008),
+    (r"^[A-Z]{3}-\d{2}-[A-Z]$", "XXX-99-X", 2015),
+    (r"^[A-Z]-\d{2}-[A-Z]{3}$", "X-99-XXX", 2021),
+    (r"^\d-[A-Z]{2}-\d{3}$", "9-XX-999", 2016),
+    (r"^\d{3}-[A-Z]{2}-\d$", "999-XX-9", 2019),
 ]
 
 
@@ -58,31 +61,27 @@ def parse_kenteken(plate: str) -> dict:
         "non_compliant_letters": [],
     }
 
-    if len(raw) == 6:
-        candidates = {
-            1: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            2: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            3: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            4: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            5: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            6: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",
-            7: f"{raw[0:2]}-{raw[2:5]}-{raw[5:6]}",
-            8: f"{raw[0:1]}-{raw[1:4]}-{raw[4:6]}",
-            9: f"{raw[0:3]}-{raw[3:5]}-{raw[5:6]}",
-            10: f"{raw[0:1]}-{raw[1:4]}-{raw[4:6]}",
-            11: f"{raw[0:2]}-{raw[2:5]}-{raw[5:6]}",
-            12: f"{raw[0:1]}-{raw[1:3]}-{raw[3:6]}",
-            13: f"{raw[0:2]}-{raw[2:3]}-{raw[3:6]}",
-            14: f"{raw[0:3]}-{raw[3:4]}-{raw[4:6]}",
-        }
-    elif len(raw) == 7:
-        candidates = {
-            15: f"{raw[0:1]}-{raw[1:3]}-{raw[3:5]}-{raw[5:6]}",
-            16: f"{raw[0:2]}-{raw[2:3]}-{raw[3:5]}-{raw[5:7]}",
-        }
-    else:
-        result["error"] = f"长度 {len(raw)} 不是 6 或 7 字符"
+    if len(raw) != 6:
+        result["error"] = f"长度 {len(raw)} 不是 6 字符（荷兰车牌一律 6 位）"
         return result
+
+    # 按每个 sidecode 掩码的连字符分组重新切片（6 位字符切成 3 组）
+    candidates = {
+        1: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # XX-99-99
+        2: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # 99-99-XX
+        3: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # 99-XX-99
+        4: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # XX-99-XX
+        5: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # XX-XX-99
+        6: f"{raw[0:2]}-{raw[2:4]}-{raw[4:6]}",    # 99-XX-XX
+        7: f"{raw[0:2]}-{raw[2:5]}-{raw[5:6]}",    # 99-XXX-9
+        8: f"{raw[0:1]}-{raw[1:4]}-{raw[4:6]}",    # 9-XXX-99
+        9: f"{raw[0:2]}-{raw[2:5]}-{raw[5:6]}",    # XX-999-X
+        10: f"{raw[0:1]}-{raw[1:4]}-{raw[4:6]}",   # X-999-XX
+        11: f"{raw[0:3]}-{raw[3:5]}-{raw[5:6]}",   # XXX-99-X
+        12: f"{raw[0:1]}-{raw[1:3]}-{raw[3:6]}",   # X-99-XXX
+        13: f"{raw[0:1]}-{raw[1:3]}-{raw[3:6]}",   # 9-XX-999
+        14: f"{raw[0:3]}-{raw[3:5]}-{raw[5:6]}",   # 999-XX-9
+    }
 
     for code, (pattern, desc, year) in enumerate(SIDECODES, 1):
         c = candidates.get(code)
