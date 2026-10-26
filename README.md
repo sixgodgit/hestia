@@ -22,6 +22,7 @@
 | [`dutch-energy-bill-disputes`](skills/dutch-energy-bill-disputes/) | 能源与公用事业账单审计与异议：时效（verjaring）、bezwaar、netbeheerder vangnet | 英文 |
 | [`money-transfer-limits-and-fees`](skills/money-transfer-limits-and-fees/) | 汇款、外币与银行卡限额/费率（含荷兰银行与 ICS 的差异） | 英文 |
 | [`industrial-maintenance-netherlands`](skills/industrial-maintenance-netherlands/) | 机电与制冷：西门子/施耐德等电气元件识别与跨品牌替换、荷兰供应商、故障排查 | 英文 |
+| [`dutch-car-aftercare`](skills/dutch-car-aftercare/) | 车辆售后：保修不绑销售商与经销商升级阶梯（importeur / Geschillencommissie / non-conformiteit）、车险保单逐项核对、荷兰限速与测速执法（OM 修正、trajectcontrole、罚款档位） | 中文 / 英文 |
 
 ## 怎么用
 
